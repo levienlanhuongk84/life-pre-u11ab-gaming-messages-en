@@ -1262,6 +1262,11 @@ html[lang="vi"] #writing .sample.why1::before, html[lang="vi"] #action .sample.w
 #writing .order-list .it { flex-wrap: wrap; }
 #writing .order-list .it .sample.why1 { flex-basis: 100%; margin-left: 4.9em; }
 @media (max-width: 640px) { #writing .order-list .it .sample.why1 { margin-left: 0; } }
+/* Sheet 8: the 9-step bar stays on screen while scrolling; each chip jumps to its step (teacher, 13/10/2026) */
+#writing .wbar { position: sticky; top: 0; z-index: 30; background: var(--bg); padding: 8px 0; margin-bottom: 8px; box-shadow: 0 6px 10px -8px rgba(60,30,90,.25); }
+#writing [id^="w-s"] { scroll-margin-top: 130px; }
+#writing .wbar a.on { outline: 2px solid var(--purple); }
+@media (max-width: 900px) { #writing .wbar { top: 56px; overflow-x: auto; flex-wrap: nowrap; } #writing .wbar a { flex: none; } #writing [id^="w-s"] { scroll-margin-top: 150px; } }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Condensed:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap">
@@ -3542,6 +3547,14 @@ html[lang="vi"] #writing .sample.why1::before, html[lang="vi"] #action .sample.w
     $('.ft-t', w).addEventListener('click', () => w.classList.toggle('min'));
     w.classList.add('min');
   })();
+})();
+
+(function () {
+  const bar = document.querySelector('#writing .wbar'); if (!bar) return;
+  const links = [...bar.querySelectorAll('a[href^="#"]')];
+  links.forEach(a => a.addEventListener('click', e => { const t = document.getElementById(a.getAttribute('href').slice(1)); if (!t) return; e.preventDefault(); e.stopPropagation(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, true));
+  const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + x.target.id)); }), { rootMargin: '-30% 0px -60% 0px' });
+  links.forEach(a => { const t = document.getElementById(a.getAttribute('href').slice(1)); if (t) io.observe(t); });
 })();
 
 (function () {
