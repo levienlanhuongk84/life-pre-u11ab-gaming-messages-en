@@ -1290,6 +1290,59 @@ html[lang="vi"] #writing .sample.why1::before, html[lang="vi"] #action .sample.w
 #writing [id^="w-s"] { scroll-margin-top: 130px; }
 #writing .wbar a.on { outline: 2px solid var(--purple); }
 @media (max-width: 900px) { #writing .wbar { top: 56px; flex-wrap: wrap; gap: 4px; } #writing .wbar a { font-size: .74em; padding: 3px 8px; } #writing [id^="w-s"] { scroll-margin-top: 190px; } }
+
+/* Sheet 8 Writing — task and exercise side by side (teacher 22/10/2026).
+   Built at load time by u11-wsplit.js: .wsplit = [.wsplit-task | .wsplit-work].
+   Wide screens: two columns, the task column stays pinned under the step bar while the student works.
+   Sheet narrower than 760 px (phones, small windows; a container query, so the rail does not count): one column, the task card pinned at the top (scrolls inside, can be folded). */
+#writing { container: wsheet / inline-size; }
+#writing .ex.has-split { overflow: visible; }
+#writing .wsplit { display: grid; grid-template-columns: minmax(0, 40fr) minmax(0, 60fr); gap: 18px; align-items: start; }
+#writing .wsplit-step { margin: 6px 0 14px; }
+#writing .wsplit-work { min-width: 0; }
+#writing .wsplit-work > .ex:first-child { margin-top: 0; }
+#writing .wsplit-task {
+  position: sticky; top: calc(var(--wsplit-top, 64px) + 8px); z-index: 5;
+  max-height: calc(100vh - var(--wsplit-top, 64px) - 24px); overflow: auto; overscroll-behavior: contain;
+  background: #faf7fd; border: 1px solid #e3d8ef; border-left: 4px solid var(--purple, #613087); border-radius: 12px;
+  padding: 10px 14px 12px; -webkit-overflow-scrolling: touch;
+}
+#writing .wsplit-task > .wsplit-lab { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font: 700 .72em/1.2 "Roboto Condensed", Roboto, sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--purple, #613087); margin: 0 0 6px; }
+#writing .wsplit-task > .wsplit-lab button { display: none; font: 600 .95em/1 Roboto, sans-serif; letter-spacing: 0; text-transform: none;
+  border: 1px solid #d6c8e6; background: #fff; color: var(--purple, #613087); border-radius: 999px; padding: 5px 10px; cursor: pointer; }
+#writing .wsplit-task > .ex-note { margin: 0 0 8px; }
+#writing .wsplit-task:has(> .task-card) > .wsplit-lab { display: none; }   /* the task card has its own 'Task' title */
+#writing .wsplit-task > .card, #writing .wsplit-task > blockquote, #writing .wsplit-task > .grid-2 { margin: 0; }
+#writing .wsplit-task .grid-2 { grid-template-columns: 1fr; }
+#writing .wsplit-task > * + * { margin-top: 8px; }
+
+@container wsheet (max-width: 760px) {
+  #writing .wsplit { grid-template-columns: 1fr; gap: 10px; }
+  #writing .wsplit-task {
+    top: var(--wsplit-top, 56px); z-index: 25; max-height: 30vh;
+    box-shadow: 0 8px 14px -10px rgba(60, 30, 90, .45); padding: 8px 12px 10px;
+  }
+  #writing .wsplit-task > .wsplit-lab button { display: inline-block; }
+  #writing .wsplit-task:has(> .task-card) > .wsplit-lab { display: flex; }   /* phones: keep the fold button */
+  #writing .wsplit-task.folded { max-height: none; overflow: hidden; padding-bottom: 6px; }
+  #writing .wsplit-task.folded > :not(.wsplit-lab) { display: none; }
+  #writing .wsplit-task.folded > .wsplit-lab { margin: 0; }
+}
+@media print { #writing .wsplit { display: block; } #writing .wsplit-task { position: static; max-height: none; overflow: visible; } }
+
+/* 11c–11d .wside-l: same fold button, shown only where the panel is pinned above the exercises */
+#writing .wside-l > .wside-lab { display: none; }
+@media (max-width: 900px) {
+  #writing .wside-l > .wside-lab { display: flex; align-items: center; justify-content: space-between; gap: 8px; position: sticky; top: 0; z-index: 1;
+    background: inherit; font: 700 .72em/1.2 "Roboto Condensed", Roboto, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--purple, #613087); margin: 0 0 6px; }
+  #writing .wside-l > .wside-lab > span { visibility: hidden; }
+  #writing .wside-l > .wside-lab button { display: inline-block; font: 600 .95em/1 Roboto, sans-serif; letter-spacing: 0; text-transform: none;
+    border: 1px solid #d6c8e6; background: #fff; color: var(--purple, #613087); border-radius: 999px; padding: 5px 10px; cursor: pointer; }
+  #writing .wside-l.folded { max-height: none !important; overflow: hidden; }
+  #writing .wside-l.folded > :not(.wside-lab) { display: none; }
+}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Condensed:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap">
@@ -3592,6 +3645,66 @@ html[lang="vi"] #writing .sample.why1::before, html[lang="vi"] #action .sample.w
     const e = document.createElement('div'); e.className = 'sel-echo'; e.hidden = true; s.after(e);
     s.addEventListener('change', () => { const o = s.selectedOptions[0]; e.textContent = s.value && o ? o.textContent : ''; e.hidden = !e.textContent; });
   });
+})();
+
+/* Sheet 8 Writing — task | exercise side by side (teacher 22/10/2026). See u11-wsplit.css.
+   Moves whole nodes only (ex-note, task material, ex-body, ex-foot keep their listeners and classes). */
+(function () {
+  const W = document.getElementById('writing'); if (!W) return;
+  const L = document.documentElement.lang === 'vi'
+    ? { task: 'Đề bài', fold: 'Thu gọn ▲', open: 'Xem đề ▼' }
+    : { task: 'Task', fold: 'Hide ▲', open: 'Show task ▼' };
+  const mk = c => { const d = document.createElement('div'); d.className = c; return d; };
+  const label = () => {
+    const lab = mk('wsplit-lab'); lab.innerHTML = `<span>${L.task}</span><button type="button" aria-expanded="true">${L.fold}</button>`;
+    lab.querySelector('button').addEventListener('click', e => {
+      const t = e.currentTarget.closest('.wsplit-task, .wside-l'); const f = t.classList.toggle('folded');
+      e.currentTarget.textContent = f ? L.open : L.fold; e.currentTarget.setAttribute('aria-expanded', String(!f));
+    });
+    return lab;
+  };
+  // material the exercise is about: the task card, a sample paragraph, the outline frames, the writing prompt (11c–11d)
+  const MAT = ':scope > .task-card, :scope > blockquote.sample-par, :scope > .grid-2.hint-2, :scope > .wprompt';
+  W.querySelectorAll('section.wstep').forEach(step => {
+    const model = step.querySelector(':scope > .wmodel-card');
+    const exs = [...step.querySelectorAll(':scope > .ex')];
+    if (model && exs.length) {                       // Step 1: the model paragraph serves every exercise of the step
+      const g = mk('wsplit wsplit-step'), t = mk('wsplit-task'), w = mk('wsplit-work');
+      model.before(g); t.append(label(), model); exs.forEach(e => w.appendChild(e)); g.append(t, w);
+      return;
+    }
+    exs.forEach(ex => {
+      const head = ex.querySelector(':scope > .ex-head'), note = ex.querySelector(':scope > .ex-note');
+      const body = ex.querySelector(':scope > .ex-body'), foot = ex.querySelector(':scope > .ex-foot');
+      const mats = body ? [...body.querySelectorAll(MAT)] : [];
+      if (!body || (!note && !mats.length)) return;  // nothing to set beside the exercise: keep one column
+      if (body.querySelector('.wside')) return;      // already two columns of its own (11c–11d Stage 9d–9e)
+      const g = mk('wsplit'), t = mk('wsplit-task'), w = mk('wsplit-work');
+      t.appendChild(label()); if (note) t.appendChild(note); mats.forEach(m => t.appendChild(m));
+      (head || body).after(g); if (!head) g.before(body);
+      w.appendChild(body); if (foot) w.appendChild(foot);
+      g.append(t, w); ex.classList.add('has-split');
+    });
+  });
+  // 11c–11d: its Stages 1–8 already sit side by side (.wside: frames | exercises) — give that left panel the same fold button
+  W.querySelectorAll('.wside > .wside-l').forEach(l => { const lab = label(); lab.classList.add('wside-lab'); l.prepend(lab); });
+  // phones: typing opens the keyboard, so fold the pinned task to give the writing box the screen (Show task opens it again)
+  W.addEventListener('focusin', e => {
+    if (!e.target.matches('textarea, input[type="text"], input:not([type])')) return;
+    const g = e.target.closest('.wsplit, .wside'); if (!g) return;
+    if (getComputedStyle(g).gridTemplateColumns.trim().split(/\s+/).length > 1) return;   // two columns: nothing covers the box
+    const t = g.querySelector(':scope > .wsplit-task, :scope > .wside-l'), btn = t && t.querySelector(':scope > .wsplit-lab button');
+    if (t && !t.classList.contains('folded') && btn) btn.click();
+  });
+  // pin the task column just under the sticky step bar
+  const bar = W.querySelector('.wbar');
+  const setTop = () => {
+    if (!bar) return;
+    const top = parseFloat(getComputedStyle(bar).top) || 0;
+    W.style.setProperty('--wsplit-top', Math.round(top + bar.offsetHeight) + 'px');
+  };
+  setTop(); addEventListener('resize', setTop, { passive: true });
+  if (window.ResizeObserver && bar) new ResizeObserver(setTop).observe(bar);
 })();
 </script>
 </body>
